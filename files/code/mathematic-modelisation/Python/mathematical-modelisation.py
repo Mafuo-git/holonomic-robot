@@ -31,7 +31,7 @@ LY = 0.30                # half-distance in y between front and back wheel axes 
 # If you prefer full distances, set lx = full/2 etc.
 
 # Simulation settings
-SCREEN_SIZE = (900, 700)
+SCREEN_SIZE = (1500, 1200)
 WORLD_TO_PIX = 100.0     # scale: 1 meter -> WORLD_TO_PIX pixels
 ROBOT_WIDTH = 0.4        # robot width in meters (x direction)
 ROBOT_LENGTH = 0.6       # robot length in meters (y direction)
@@ -45,6 +45,10 @@ COLOR_ROBOT = (200, 200, 200)
 COLOR_WHEEL = (120, 120, 255)
 COLOR_TEXT = (220, 220, 220)
 COLOR_VECTOR = (255, 80, 80)
+COLOR_AXIS_X = (255, 0, 0)    # Red for X axis
+COLOR_AXIS_Y = (0, 255, 0)    # Green for Y axis
+COLOR_WHEEL_FORWARD = (0, 255, 0)    # Green for forward rotation
+COLOR_WHEEL_BACKWARD = (255, 0, 0)    # Red for backward rotation
 # Control modes
 MODE_MANUAL = 0
 MODE_AUTO = 1
@@ -54,6 +58,10 @@ KP_ANGLE = 2.0  # Angle proportional gain
 # Target point visualization
 TARGET_RADIUS = 8
 COLOR_TARGET = (255, 160, 0)
+AXIS_LENGTH = 50             # Length in pixels (not meters)
+AXIS_THICKNESS = 2
+AXIS_MARGIN = 50             # Margin from screen borders
+WHEEL_ARROW_SIZE = 25                # Base size for wheel rotation indicators
 
 # ---------------------------
 # Kinematics functions
@@ -103,7 +111,7 @@ def body_to_world(vx_body, vy_body, omega, theta):
 
 
 # ---------------------------
-# Pygame rendering helperss
+# Pygame rendering helpers
 # ---------------------------
 
 def meters_to_pixels(x_m, y_m, screen_center):
@@ -116,6 +124,51 @@ def meters_to_pixels(x_m, y_m, screen_center):
     return int(px), int(py)
 
 
+def draw_wheel_rotation_indicator(surface, center, angular_velocity, theta, max_speed=MAX_REQUEST_V):
+    """
+    Draw an arrow indicating wheel rotation direction and speed.
+    The arrow length is proportional to the wheel speed.
+    """
+    if abs(angular_velocity) < 0.01:  # Skip if wheel is practically not moving
+        return
+        
+    # Normalize velocity for arrow length (0 to 1)
+    normalized_speed = min(abs(angular_velocity), max_speed) / max_speed
+    arrow_length = WHEEL_ARROW_SIZE * normalized_speed
+    
+    # Calculate arrow end point based on direction
+    if angular_velocity > 0:  # One direction
+        angle = theta + math.pi/2  # Perpendicular to wheel orientation
+    else:  # Other direction
+        angle = theta - math.pi/2
+        
+    # Calculate arrow end points
+    end_x = center[0] + arrow_length * math.cos(angle)
+    end_y = center[1] - arrow_length * math.sin(angle)  # Minus because pygame y is inverted
+    
+    # Draw arrow line
+    color = COLOR_WHEEL_FORWARD if angular_velocity > 0 else COLOR_WHEEL_BACKWARD
+    pygame.draw.line(surface, color, center, (end_x, end_y), 2)
+    
+    # Draw arrow head
+    head_length = min(8, arrow_length/3)  # Arrow head size proportional to length but with max
+    if arrow_length > head_length * 2:  # Only draw head if arrow is long enough
+        angle_head = math.pi/6  # 30 degrees
+        if angular_velocity > 0:
+            angle1 = angle + angle_head
+            angle2 = angle - angle_head
+        else:
+            angle1 = angle + math.pi + angle_head
+            angle2 = angle + math.pi - angle_head
+            
+        head1_x = end_x - head_length * math.cos(angle1)
+        head1_y = end_y + head_length * math.sin(angle1)
+        head2_x = end_x - head_length * math.cos(angle2)
+        head2_y = end_y + head_length * math.sin(angle2)
+        
+        pygame.draw.line(surface, color, (end_x, end_y), (head1_x, head1_y), 2)
+        pygame.draw.line(surface, color, (end_x, end_y), (head2_x, head2_y), 2)
+
 def draw_robot(surface, pose, wheels_angular, requested, params):
     """
     Draw the robot rectangle, heading, and small wheels. Also draw a velocity vector.
@@ -124,6 +177,10 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
     requested: (vx_req, vy_req, w_req)
     params: dict with robot dims
     """
+    # Initialize font at the start of the function
+    font = pygame.font.get_default_font()
+    f = pygame.font.Font(font, 16)
+
     x, y, theta = pose
     screen_center = (surface.get_width() // 2, surface.get_height() // 2)
     # robot rectangle corners in local frame
@@ -151,20 +208,35 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
     # draw wheels as small rectangles on each side (approx)
     # wheel positions in local frame (front-left, front-right, back-right, back-left)
     wheel_positions = [
-        ( L/2,  W/2),
-        ( L/2, -W/2),
-        (-L/2, -W/2),
-        (-L/2,  W/2),
+        ( L/2,  W/2),  # Front-left
+        ( L/2, -W/2),  # Front-right
+        (-L/2, -W/2),  # Back-right
+        (-L/2,  W/2),  # Back-left
     ]
     wheel_size_px = (8, 18)
-    for (wx_loc, wy_loc), w_ang in zip(wheel_positions, wheels_angular):
+    wheel_names = ['FL', 'FR', 'BR', 'BL']
+    
+    for (wx_loc, wy_loc), w_ang, name in zip(wheel_positions, wheels_angular, wheel_names):
         # wheel center in world
         wx_world = x + (wx_loc * math.cos(theta) - wy_loc * math.sin(theta))
         wy_world = y + (wx_loc * math.sin(theta) + wy_loc * math.cos(theta))
         rect_center = meters_to_pixels(wx_world, wy_world, screen_center)
+        
+        # Draw wheel rectangle
         rect = pygame.Rect(0, 0, wheel_size_px[0], wheel_size_px[1])
         rect.center = rect_center
         pygame.draw.rect(surface, COLOR_WHEEL, rect)
+        
+        # Draw rotation indicator arrow
+        draw_wheel_rotation_indicator(surface, rect_center, w_ang, theta)
+        
+        # Add wheel name and speed text
+        wheel_text = f"{name}: {w_ang:.1f} rad/s"
+        text_surf = f.render(wheel_text, True, COLOR_TEXT)
+        text_rect = text_surf.get_rect()
+        text_rect.centerx = rect_center[0]
+        text_rect.top = rect_center[1] + 20
+        surface.blit(text_surf, text_rect)
     # draw requested velocity vector (in robot frame) transformed to world for visualization
     vx_req, vy_req, w_req = requested
     vx_world, vy_world, _ = body_to_world(vx_req, vy_req, 0.0, theta)
@@ -181,6 +253,36 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
     for i, line in enumerate(info_lines):
         surf = f.render(line, True, COLOR_TEXT)
         surface.blit(surf, (10, 10 + 18 * i))
+
+def draw_coordinate_system(surface):
+    """
+    Draw X-Y coordinate system in the bottom-left corner of the screen.
+    X axis in red, Y axis in green.
+    """
+    # Position in bottom-left corner with margin
+    origin_x = AXIS_MARGIN
+    origin_y = surface.get_height() - AXIS_MARGIN
+    origin = (origin_x, origin_y)
+    
+    # Draw X axis (red)
+    end_x = (origin_x + AXIS_LENGTH, origin_y)
+    pygame.draw.line(surface, COLOR_AXIS_X, origin, end_x, AXIS_THICKNESS)
+    
+    # Draw Y axis (green)
+    end_y = (origin_x, origin_y - AXIS_LENGTH)
+    pygame.draw.line(surface, COLOR_AXIS_Y, origin, end_y, AXIS_THICKNESS)
+    
+    # Draw axis labels
+    font = pygame.font.get_default_font()
+    f = pygame.font.Font(font, 16)
+    
+    # X label
+    x_label = f.render("X", True, COLOR_AXIS_X)
+    surface.blit(x_label, (end_x[0] + 5, end_x[1] - 20))
+    
+    # Y label
+    y_label = f.render("Y", True, COLOR_AXIS_Y)
+    surface.blit(y_label, (end_y[0] - 20, end_y[1] - 5))
 
 
 # ---------------------------
@@ -351,6 +453,9 @@ def main():
         footer = f.render("Controls: M toggle mode | Click to set target (AUTO) | arrows/ZQSD move (MANUAL) | A/E rotate | SPACE stop | R reset | ESC quit", 
                          True, COLOR_TEXT)
         screen.blit(footer, (10, SCREEN_SIZE[1] - 26))
+        
+        # Draw the coordinate system (optional)
+        draw_coordinate_system(screen)
         
         pygame.display.flip()
 
