@@ -230,13 +230,6 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
         # Draw rotation indicator arrow
         draw_wheel_rotation_indicator(surface, rect_center, w_ang, theta)
         
-        # Add wheel name and speed text
-        wheel_text = f"{name}: {w_ang:.1f} rad/s"
-        text_surf = f.render(wheel_text, True, COLOR_TEXT)
-        text_rect = text_surf.get_rect()
-        text_rect.centerx = rect_center[0]
-        text_rect.top = rect_center[1] + 20
-        surface.blit(text_surf, text_rect)
     # draw requested velocity vector (in robot frame) transformed to world for visualization
     vx_req, vy_req, w_req = requested
     vx_world, vy_world, _ = body_to_world(vx_req, vy_req, 0.0, theta)
@@ -248,7 +241,8 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
     info_lines = [
         f"pose x:{x:.2f} m  y:{y:.2f} m  θ:{math.degrees(theta)%360:.1f}°",
         f"requested vx:{vx_req:.2f} m/s  vy:{vy_req:.2f} m/s  ω:{w_req:.2f} rad/s",
-        f"wheel w (rad/s): {', '.join(f'{wi:.2f}' for wi in wheels_angular)}",
+        f"FL:{wheels_angular[0]:6.2f} rad/s  FR:{wheels_angular[1]:6.2f} rad/s",
+        f"BL:{wheels_angular[3]:6.2f} rad/s  BR:{wheels_angular[2]:6.2f} rad/s"
     ]
     for i, line in enumerate(info_lines):
         surf = f.render(line, True, COLOR_TEXT)
