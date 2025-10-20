@@ -1,0 +1,5 @@
+V1.1 : First version of the 4-wheels mathematical modelisation in Python (finally wrong because of the mecanum wheels).
+
+V1.2 : Correction of the mathematical modelisation for mecanum wheels.
+
+V1.3 : Installation instruction for Matlab engine in Python added (communication between Python and Matlab).

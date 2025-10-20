@@ -3,7 +3,7 @@ MATHEMATICAL MODELISATION OF A 4-WHEEL MECANUM (45°) HOLONOMIC ROBOT
 Simple 2D simulation using pygame.
 
 Controls (keyboard):
-    arrows / ZQSD  : translate requested vx, vy
+    arrows  : translate requested vx, vy
     A / E          : rotate requested angular velocity (w)
     space          : stop (zero requested velocities)
     r              : reset pose
@@ -15,9 +15,19 @@ All code comments are in English.
 import math
 import sys
 import time
-
+import csv
+from datetime import datetime
 import numpy as np
 import pygame
+
+# Ajout des imports pour MATLAB
+try:
+    import matlab.engine
+except ImportError:
+    print("MATLAB Engine for Python not found. Only CSV export will be available.")
+    USE_MATLAB = False
+else:
+    USE_MATLAB = True
 
 # ---------------------------
 # Configuration / parameters
@@ -31,7 +41,7 @@ LY = 0.30                # half-distance in y between front and back wheel axes 
 # If you prefer full distances, set lx = full/2 etc.
 
 # Simulation settings
-SCREEN_SIZE = (1000, 800)
+SCREEN_SIZE = (1600, 1200)
 WORLD_TO_PIX = 100.0     # scale: 1 meter -> WORLD_TO_PIX pixels
 ROBOT_WIDTH = 0.4        # robot width in meters (x direction)
 ROBOT_LENGTH = 0.6       # robot length in meters (y direction)
@@ -331,6 +341,53 @@ def clean_exit():
     pygame.quit()
     sys.exit()
 
+class DataLogger:
+    def __init__(self):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.csv_filename = f"robot_data_{timestamp}.csv"
+        self.data = []
+        self.header = ['time', 'x', 'y', 'theta', 
+                      'wheel1_speed', 'wheel2_speed', 'wheel3_speed', 'wheel4_speed',
+                      'target_x', 'target_y']
+        
+        # Créer le fichier CSV avec l'en-tête
+        with open(self.csv_filename, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(self.header)
+        
+        # Initialiser MATLAB si disponible
+        self.matlab_engine = None
+        if USE_MATLAB:
+            try:
+                self.matlab_engine = matlab.engine.start_matlab()
+                print("MATLAB Engine started successfully")
+            except Exception as e:
+                print(f"Failed to start MATLAB Engine: {e}")
+                self.matlab_engine = None
+
+    def log_data(self, time, pose, wheels, target_point):
+        data_row = [time, pose[0], pose[1], pose[2],
+                   wheels[0], wheels[1], wheels[2], wheels[3],
+                   target_point[0] if target_point else 0,
+                   target_point[1] if target_point else 0]
+        
+        # Sauvegarder dans le CSV
+        with open(self.csv_filename, 'a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(data_row)
+        
+        # Envoyer à MATLAB si disponible
+        if self.matlab_engine is not None:
+            try:
+                self.matlab_engine.workspace['current_data'] = data_row
+                self.matlab_engine.eval('update_plots(current_data);', nargout=0)
+            except Exception as e:
+                print(f"Error sending data to MATLAB: {e}")
+
+    def close(self):
+        if self.matlab_engine is not None:
+            self.matlab_engine.quit()
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
@@ -359,7 +416,12 @@ def main():
     control_mode = MODE_MANUAL
     target_point = None
     
+    # Initialize data logger
+    data_logger = DataLogger()
+    start_time = time.time()
+    
     while running:
+        current_time = time.time() - start_time
         dt = clock.tick(FPS) / 1000.0
         
         # Event handling
@@ -429,6 +491,9 @@ def main():
         pose[1] += vy_world * dt
         pose[2] += omega_world * dt
 
+        # Log data
+        data_logger.log_data(current_time, pose, wheels, target_point)
+
         # Rendering
         screen.fill(COLOR_BG)
         draw_robot(screen, pose, wheels, requested, params)
@@ -454,6 +519,8 @@ def main():
         
         pygame.display.flip()
 
+    # Fermeture propre
+    data_logger.close()
     pygame.quit()
     sys.exit()
 
