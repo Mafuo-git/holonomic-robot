@@ -45,6 +45,15 @@ COLOR_ROBOT = (200, 200, 200)
 COLOR_WHEEL = (120, 120, 255)
 COLOR_TEXT = (220, 220, 220)
 COLOR_VECTOR = (255, 80, 80)
+# Control modes
+MODE_MANUAL = 0
+MODE_AUTO = 1
+# PID control gains for autonomous mode
+KP_POS = 1.0    # Position proportional gain
+KP_ANGLE = 2.0  # Angle proportional gain
+# Target point visualization
+TARGET_RADIUS = 8
+COLOR_TARGET = (255, 160, 0)
 
 # ---------------------------
 # Kinematics functions
@@ -175,6 +184,44 @@ def draw_robot(surface, pose, wheels_angular, requested, params):
 
 
 # ---------------------------
+# Control functions
+# ---------------------------
+
+def compute_control_to_target(current_pose, target_point):
+    """
+    Compute control commands (vx, vy, w) to reach target point.
+    Uses a simple proportional control law.
+    """
+    x, y, theta = current_pose
+    target_x, target_y = target_point
+    
+    # Compute error in global frame
+    dx = target_x - x
+    dy = target_y - y
+    distance = math.sqrt(dx**2 + dy**2)
+    
+    # Convert to robot frame
+    dx_robot = dx * math.cos(theta) + dy * math.sin(theta)
+    dy_robot = -dx * math.sin(theta) + dy * math.cos(theta)
+    
+    # Simple proportional control
+    vx = KP_POS * dx_robot
+    vy = KP_POS * dy_robot
+    
+    # Angle to target (simple proportional on angle error)
+    target_angle = math.atan2(dy, dx)
+    angle_error = (target_angle - theta + math.pi) % (2*math.pi) - math.pi
+    w = KP_ANGLE * angle_error
+    
+    # Clamp values
+    vx = clamp(vx, -MAX_REQUEST_V, MAX_REQUEST_V)
+    vy = clamp(vy, -MAX_REQUEST_V, MAX_REQUEST_V)
+    w = clamp(w, -MAX_REQUEST_OMEGA, MAX_REQUEST_OMEGA)
+    
+    return vx, vy, w, distance
+
+
+# ---------------------------
 # Main simulation
 # ---------------------------
 
@@ -193,9 +240,17 @@ def main():
     pygame.display.set_caption("Holonomic 4-wheel Mecanum Simulation")
     clock = pygame.time.Clock()
 
+    # Add font initialization at the start of main()
+    font = pygame.font.get_default_font()
+    f = pygame.font.Font(font, 14)  # Define 'f' as the font object we'll use
+
     # initial robot pose (world frame)
     pose = [0.0, 0.0, 0.0]  # x(m), y(m), theta(rad)
     requested = [0.0, 0.0, 0.0]  # vx, vy, omega (in robot frame)
+    
+    # Add control mode variables
+    control_mode = MODE_MANUAL
+    target_point = None
 
     params = {'width': ROBOT_WIDTH, 'length': ROBOT_LENGTH}
 
@@ -203,8 +258,13 @@ def main():
     paused = False
     last_time = time.time()
 
+    # Add new variables for control mode and target
+    control_mode = MODE_MANUAL
+    target_point = None
+    
     while running:
         dt = clock.tick(FPS) / 1000.0
+        
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -217,26 +277,48 @@ def main():
                 elif event.key == pygame.K_r:
                     pose = [0.0, 0.0, 0.0]
                     requested = [0.0, 0.0, 0.0]
-                # optional wheel radius scale not implemented interactive; keep simple
-        # continuous key state for smooth control
-        keys = pygame.key.get_pressed()
-        # linear increments per second
-        inc_lin = 1.5 * dt
-        inc_ang = 2.0 * dt
-        # English-friendly keys: arrow keys and WASD/ZQSD
-        if keys[pygame.K_UP] or keys[pygame.K_z]:
-            requested[0] = clamp(requested[0] + inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            requested[0] = clamp(requested[0] - inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            requested[1] = clamp(requested[1] - inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)  # right is negative vy in this convention
-        if keys[pygame.K_LEFT] or keys[pygame.K_q]:
-            requested[1] = clamp(requested[1] + inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
-        if keys[pygame.K_a]:
-            requested[2] = clamp(requested[2] + inc_ang, -MAX_REQUEST_OMEGA, MAX_REQUEST_OMEGA)
-        if keys[pygame.K_e]:
-            requested[2] = clamp(requested[2] - inc_ang, -MAX_REQUEST_OMEGA, MAX_REQUEST_OMEGA)
+                elif event.key == pygame.K_m:  # Toggle mode
+                    control_mode = MODE_MANUAL if control_mode == MODE_AUTO else MODE_AUTO
+                    requested = [0.0, 0.0, 0.0]  # Reset commands when switching modes
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left click
+                    # Convert mouse position to world coordinates
+                    mx, my = event.pos
+                    screen_center = (screen.get_width() // 2, screen.get_height() // 2)
+                    target_point = ((mx - screen_center[0]) / WORLD_TO_PIX,
+                                  (screen_center[1] - my) / WORLD_TO_PIX)
+        
+        if control_mode == MODE_MANUAL:
+            # Existing manual control code
+            keys = pygame.key.get_pressed()
+            inc_lin = 1.5 * dt
+            inc_ang = 2.0 * dt
+            if keys[pygame.K_UP] or keys[pygame.K_z]:
+                requested[0] = clamp(requested[0] + inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+                requested[0] = clamp(requested[0] - inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                requested[1] = clamp(requested[1] - inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)  # right is negative vy in this convention
+            if keys[pygame.K_LEFT] or keys[pygame.K_q]:
+                requested[1] = clamp(requested[1] + inc_lin, -MAX_REQUEST_V, MAX_REQUEST_V)
+            if keys[pygame.K_a]:
+                requested[2] = clamp(requested[2] + inc_ang, -MAX_REQUEST_OMEGA, MAX_REQUEST_OMEGA)
+            if keys[pygame.K_e]:
+                requested[2] = clamp(requested[2] - inc_ang, -MAX_REQUEST_OMEGA, MAX_REQUEST_OMEGA)
 
+        else:  # MODE_AUTO
+            if target_point is not None:
+                # Compute control commands to reach target
+                vx, vy, w, distance = compute_control_to_target(pose, target_point)
+                requested = [vx, vy, w]
+                
+                # Optional: clear target when reached
+                if distance < 0.1:  # 10cm threshold
+                    target_point = None
+                    requested = [0.0, 0.0, 0.0]
+            else:
+                requested = [0.0, 0.0, 0.0]
+        
         # Compute wheel angular velocities from requested body velocities
         wheels = forward_kinematics(requested[0], requested[1], requested[2],
                                     wheel_radius=WHEEL_RADIUS, lx=LX, ly=LY)
@@ -254,12 +336,22 @@ def main():
         screen.fill(COLOR_BG)
         draw_robot(screen, pose, wheels, requested, params)
 
-        # Helper footnote
-        font = pygame.font.get_default_font()
-        f = pygame.font.Font(font, 14)
-        footer = f.render("Controls: arrows/ZQSD translate | A/E rotate | SPACE stop | R reset | ESC quit", True, COLOR_TEXT)
+        # Additional drawing for auto mode
+        if target_point is not None:
+            screen_center = (screen.get_width() // 2, screen.get_height() // 2)
+            target_px = meters_to_pixels(target_point[0], target_point[1], screen_center)
+            pygame.draw.circle(screen, COLOR_TARGET, target_px, TARGET_RADIUS)
+        
+        # Update mode info in text
+        mode_text = f"Mode: {'AUTO' if control_mode == MODE_AUTO else 'MANUAL'}"
+        mode_surf = f.render(mode_text, True, COLOR_TEXT)
+        screen.blit(mode_surf, (10, SCREEN_SIZE[1] - 46))
+        
+        # Update control hints
+        footer = f.render("Controls: M toggle mode | Click to set target (AUTO) | arrows/ZQSD move (MANUAL) | A/E rotate | SPACE stop | R reset | ESC quit", 
+                         True, COLOR_TEXT)
         screen.blit(footer, (10, SCREEN_SIZE[1] - 26))
-
+        
         pygame.display.flip()
 
     pygame.quit()
