@@ -1,5 +1,39 @@
 V1.1 : First version of the 4-wheels mathematical modelisation in Python (finally wrong because of the mecanum wheels).
 
+
+
+
+
 V1.2 : Correction of the mathematical modelisation for mecanum wheels.
 
+
+
+
+
+
 V1.3 : Installation instruction for Matlab engine in Python added (communication between Python and Matlab).
+    WARNING : Matlab must be installed on the computer for this step to work AND the Matlab file must be in the same folder as the Python file !!!
+
+    Installez le MATLAB Engine pour Python :
+
+        cd "matlabroot\extern\engines\python"
+        python setup.py install
+
+
+    Assurez-vous que MATLAB est installé et que le chemin est correctement configuré.
+
+    Lancez d'abord MATLAB et gardez-le ouvert.
+
+    Ensuite, lancez votre script Python.
+
+    Les données seront :
+
+    Sauvegardées en continu dans un fichier CSV
+    Envoyées en temps réel à MATLAB pour visualisation
+    Disponibles pour une analyse ultérieure
+    Si vous ne souhaitez pas utiliser MATLAB en temps réel, vous pouvez toujours analyser les données du fichier CSV après coup dans MATLAB ou un autre outil.
+
+    Pour utiliser les données CSV dans MATLAB après coup, vous pouvez utiliser :
+
+        data = readtable('robot_data_20231020_123456.csv');
+        plot(data.x, data.y, 'b-');

@@ -31,7 +31,7 @@ LY = 0.30                # half-distance in y between front and back wheel axes 
 # If you prefer full distances, set lx = full/2 etc.
 
 # Simulation settings
-SCREEN_SIZE = (1000, 800)
+SCREEN_SIZE = (900, 600)
 WORLD_TO_PIX = 100.0     # scale: 1 meter -> WORLD_TO_PIX pixels
 ROBOT_WIDTH = 0.4        # robot width in meters (x direction)
 ROBOT_LENGTH = 0.6       # robot length in meters (y direction)
