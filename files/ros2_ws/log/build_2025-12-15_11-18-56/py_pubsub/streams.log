@@ -1,0 +1,29 @@
+[0.661s] Invoking command in '/home/auguste/ros2_ws/src/py_pubsub': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/auguste/ros2_ws/build/py_pubsub/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/py_pubsub build --build-base /home/auguste/ros2_ws/build/py_pubsub/build install --record /home/auguste/ros2_ws/build/py_pubsub/install.log --single-version-externally-managed install_data
+[0.855s] running egg_info
+[0.869s] writing ../../build/py_pubsub/py_pubsub.egg-info/PKG-INFO
+[0.869s] writing dependency_links to ../../build/py_pubsub/py_pubsub.egg-info/dependency_links.txt
+[0.869s] writing entry points to ../../build/py_pubsub/py_pubsub.egg-info/entry_points.txt
+[0.869s] writing requirements to ../../build/py_pubsub/py_pubsub.egg-info/requires.txt
+[0.869s] writing top-level names to ../../build/py_pubsub/py_pubsub.egg-info/top_level.txt
+[0.903s] reading manifest file '../../build/py_pubsub/py_pubsub.egg-info/SOURCES.txt'
+[0.903s] adding license file 'LICENSE'
+[0.904s] writing manifest file '../../build/py_pubsub/py_pubsub.egg-info/SOURCES.txt'
+[0.904s] running build
+[0.904s] running build_py
+[0.904s] copying py_pubsub/subscriber_member_function.py -> /home/auguste/ros2_ws/build/py_pubsub/build/lib/py_pubsub
+[0.905s] copying py_pubsub/publisher_member_function.py -> /home/auguste/ros2_ws/build/py_pubsub/build/lib/py_pubsub
+[0.905s] running install
+[0.911s] running install_lib
+[0.925s] copying /home/auguste/ros2_ws/build/py_pubsub/build/lib/py_pubsub/subscriber_member_function.py -> /home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub
+[0.926s] copying /home/auguste/ros2_ws/build/py_pubsub/build/lib/py_pubsub/publisher_member_function.py -> /home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub
+[0.926s] byte-compiling /home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub/subscriber_member_function.py to subscriber_member_function.cpython-312.pyc
+[0.926s] byte-compiling /home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub/publisher_member_function.py to publisher_member_function.cpython-312.pyc
+[0.927s] running install_data
+[0.927s] running install_egg_info
+[0.943s] removing '/home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub-0.0.0-py3.12.egg-info' (and everything under it)
+[0.943s] Copying ../../build/py_pubsub/py_pubsub.egg-info to /home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages/py_pubsub-0.0.0-py3.12.egg-info
+[0.944s] running install_scripts
+[1.038s] Installing listener script to /home/auguste/ros2_ws/install/py_pubsub/lib/py_pubsub
+[1.038s] Installing talker script to /home/auguste/ros2_ws/install/py_pubsub/lib/py_pubsub
+[1.038s] writing list of installed files to '/home/auguste/ros2_ws/build/py_pubsub/install.log'
+[1.062s] Invoked command in '/home/auguste/ros2_ws/src/py_pubsub' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/auguste/ros2_ws/build/py_pubsub/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/auguste/ros2_ws/install/py_pubsub/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/py_pubsub build --build-base /home/auguste/ros2_ws/build/py_pubsub/build install --record /home/auguste/ros2_ws/build/py_pubsub/install.log --single-version-externally-managed install_data
