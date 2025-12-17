@@ -28,10 +28,19 @@ public:
   {
     auto topic_callback =
       [this](geometry_msgs::msg::Twist::UniquePtr msg) -> void {
-        RCLCPP_INFO(this->get_logger(), "I heard: '%.2f'", msg->linear.x);
+        RCLCPP_INFO(this->get_logger(), "I heard: \n"
+        "linear : \n"
+        "x = '%.2f';\n"
+        "y = '%.2f'; \n"
+        "z = '%.2f' \n"
+        "angular: \n"
+        "x = '%.2f'; \n"
+        "y = '%.2f'; \n"
+        "z = '%.2f'",
+        msg->linear.x, msg->linear.y, msg->linear.z, msg->angular.x, msg->angular.y, msg->angular.z);
       };
     subscription_ =
-      this->create_subscription<geometry_msgs::msg::Twist>("topic", 10, topic_callback);
+      this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 10, topic_callback);
   }
 
 private:
