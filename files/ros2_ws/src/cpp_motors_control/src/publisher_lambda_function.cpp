@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <termios.h>
-#include <unistd.h>
-#include <stdio.h>
+#include <chrono>
+#include <memory>
+#include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
@@ -29,28 +29,9 @@ class CmdVelPublisher : public rclcpp::Node
 {
 public:
   CmdVelPublisher()
-  : Node("cmd_vel_publisher")
+  : Node("cmd_vel_publisher"), count_(0)
   {
-    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-
-    linear_x_speed = 0.0;
-    linear_y_speed = 0.0;
-    angular_speed = 0.0;
-
-    RCLPCPP_INFO(this.get_logger(), 
-    "Keyboard teleoperation started\n"
-    "Use the following keys to move (linear movement control):\n"
-    "A Z E\n"
-    "Q S D\n"
-    "W X\n"
-    "Use the following keys to rotate (angular movement control):\n"
-    "G H\n"
-    "Press Space to stop all movement\n"
-    "Use the direction keys to increase/decrease speed (up/down for linear, left/right for angular)\n"
-    "Press Ctrl+C to quit\n"
-  );
-
-    
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("topic", 10);
     auto timer_callback =
       [this]() -> void {
         auto message = geometry_msgs::msg::Twist();
