@@ -1,0 +1,76 @@
+// Copyright 2016 Open Source Robotics Foundation, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <termios.h>
+#include <unistd.h>
+#include <stdio.h>
+
+#include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/twist.hpp"
+
+using namespace std::chrono_literals;
+
+/* This example creates a subclass of Node and uses a fancy C++11 lambda
+ * function to shorten the callback syntax, at the expense of making the
+ * code somewhat more difficult to understand at first glance. */
+
+class CmdVelPublisher : public rclcpp::Node
+{
+public:
+  CmdVelPublisher()
+  : Node("cmd_vel_publisher")
+  {
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+
+    linear_x_speed = 0.0;
+    linear_y_speed = 0.0;
+    angular_speed = 0.0;
+
+    RCLPCPP_INFO(this.get_logger(), 
+    "Keyboard teleoperation started\n"
+    "Use the following keys to move (linear movement control):\n"
+    "A Z E\n"
+    "Q S D\n"
+    "W X\n"
+    "Use the following keys to rotate (angular movement control):\n"
+    "G H\n"
+    "Press Space to stop all movement\n"
+    "Use the direction keys to increase/decrease speed (up/down for linear, left/right for angular)\n"
+    "Press Ctrl+C to quit\n"
+  );
+
+    
+    auto timer_callback =
+      [this]() -> void {
+        auto message = geometry_msgs::msg::Twist();
+        message.linear.x = (this->count_++)%3;
+        RCLCPP_INFO(this->get_logger(), "Publishing: '%.2f'", message.linear.x);
+        this->publisher_->publish(message);
+      };
+    timer_ = this->create_wall_timer(500ms, timer_callback);
+  }
+
+private:
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+  size_t count_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<CmdVelPublisher>());
+  rclcpp::shutdown();
+  return 0;
+}
