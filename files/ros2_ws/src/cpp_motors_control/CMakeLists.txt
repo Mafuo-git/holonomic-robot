@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(phidgets_drivers REQUIRED)
+find_package(phidgets_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -30,11 +31,16 @@ add_executable(talker src/publisher_lambda_function.cpp)
 ament_target_dependencies(talker rclcpp geometry_msgs)
 
 add_executable(listener src/subscriber_lambda_function.cpp)
-ament_target_dependencies(listener rclcpp geometry_msgs phidgets_drivers)
+ament_target_dependencies(listener rclcpp geometry_msgs phidgets_drivers std_msgs)
 
 install(TARGETS
   talker
   listener
   DESTINATION lib/${PROJECT_NAME})
+
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_package()
