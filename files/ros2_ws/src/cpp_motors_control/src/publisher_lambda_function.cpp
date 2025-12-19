@@ -187,6 +187,10 @@ private:
         break;
       case 'o':
         if(verbose){RCLCPP_INFO(this->get_logger(), "Exiting teleop");}
+        this->twist_.linear.x = 0.0;
+        this->twist_.linear.y = 0.0;
+        this->twist_.angular.z = 0.0;
+        publisher_->publish(this->twist_);
         rclcpp::shutdown();
         return;
       default:

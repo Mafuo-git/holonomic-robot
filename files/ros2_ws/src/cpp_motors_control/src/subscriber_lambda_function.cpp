@@ -67,6 +67,7 @@
       publishMotor(1, w_fr);
       publishMotor(2, w_rl);
       publishMotor(3, w_rr);
+      RCLCPP_INFO(this->get_logger(), "");
     }
 
     void publishMotor(int index, double velocity)
