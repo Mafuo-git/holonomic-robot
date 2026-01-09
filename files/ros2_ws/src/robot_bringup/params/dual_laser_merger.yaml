@@ -1,0 +1,29 @@
+dual_laser_merger:
+  ros__parameters:
+
+    # Topics d'entrée
+    laser1_topic: /scan_front_filtered
+    laser2_topic: /scan_rear_filtered
+
+    # Frame cible de fusion
+    target_frame: base_link
+
+    # Publication
+    merged_topic: /scan_merged
+
+    # Angles finaux du scan fusionné
+    angle_min: -3.14159
+    angle_max:  3.14159
+
+    # Résolution angulaire (doit correspondre aux lidars)
+    angle_increment: 0.004698549397289753   # ~0.25° (RPLidar A3)
+
+    # Distances
+    range_min: 0.15
+    range_max: 25.0
+
+    # Timeout TF
+    tf_timeout: 0.1
+
+    # Comportement
+    publish_frequency: 10.0
