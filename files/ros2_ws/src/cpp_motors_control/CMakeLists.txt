@@ -27,10 +27,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(talker src/publisher_lambda_function.cpp)
+add_executable(talker src/publisher_cmdVel_teleop.cpp)
 ament_target_dependencies(talker rclcpp geometry_msgs)
 
-add_executable(listener src/subscriber_lambda_function.cpp)
+add_executable(listener src/subscriber_low_level_control.cpp)
 ament_target_dependencies(listener rclcpp geometry_msgs phidgets_drivers std_msgs)
 
 install(TARGETS
