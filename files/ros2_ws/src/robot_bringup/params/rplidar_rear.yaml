@@ -1,8 +1,0 @@
-rplidar_node:
-  ros__parameters:
-    serial_port: "/dev/ttyUSB1"      # Remplace par le port réel du LiDAR arrière
-    serial_baudrate: 256000
-    frame_id: "laser_rear"
-    inverted: false
-    angle_compensate: true
-    scan_mode: "Sensitivity"

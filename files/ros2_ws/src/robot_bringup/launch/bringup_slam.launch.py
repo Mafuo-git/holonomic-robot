@@ -1,88 +1,130 @@
 # ===============================
 # FICHIER : bringup_slam.launch.py
 # ROS 2 Jazzy
-#  - 2 RPLIDAR A3
-#  - Fusion via ira_laser_tools
-#  - slam_toolbox (sans odom)
+#  - rplidar_ros pour les deux RPLIDAR A3
+#  - laser_filters pour filtrage des scans
+#  - dual_laser_merger pour fusion des scans
+#  - slam_toolbox pour cartographie
+#  - RViz pour visualisation et pointage destination
+#  - TF2 pour les transformations de repères
+#
+# TO DO: Ajouter Nav2 pour navigation autonome
+#
 # ===============================
 
 from launch import LaunchDescription
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
-
+from ament_index_python.packages import get_package_share_directory
+import os
 
 def generate_launch_description():
+    ld = LaunchDescription()
 
-    # ---------- RPLIDAR AVANT ----------
-    rplidar_front = Node(
-        package='rplidar_ros',
-        executable='rplidar_composition',
-        name='rplidar_front',
-        parameters=[{
-            'serial_port': '/dev/rplidar_front',
-            'serial_baudrate': 256000,
-            'frame_id': 'laser_front',
-            'inverted': False,
-            'angle_compensate': True,
-            'scan_mode': 'Sensitivity',
-            'angle_min': -2.35,
-            'angle_max':  2.35
-        }],
-        output='screen'
-    )
+    # ---------- Front Lidar ----------
+    if os.path.exists("/dev/ttyUSB0"):
+        ld.add_action(Node(
+            package='rplidar_ros',
+            executable='rplidar_node',
+            name='rplidar_front',
+            parameters=[{
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB0',
+                'serial_baudrate': 256000,
+                'frame_id': 'laser_front',
+                'inverted': False,
+                'angle_compensate': False,
+                'scan_mode': 'Sensitivity'
+            }],
+            remappings=[('scan', '/scan_front')],
+            output='screen'
 
-    # ---------- RPLIDAR ARRIÈRE ----------
-    rplidar_rear = Node(
-        package='rplidar_ros',
-        executable='rplidar_composition',
-        name='rplidar_rear',
-        parameters=[{
-            'serial_port': '/dev/rplidar_rear',
-            'serial_baudrate': 256000,
-            'frame_id': 'laser_rear',
-            'inverted': False,
-            'angle_compensate': True,
-            'scan_mode': 'Sensitivity',
-            'angle_min': -2.35,
-            'angle_max':  2.35
-        }],
-        remappings=[('scan', 'scan_rear')],
-        output='screen'
-    )
+        ))
 
-    # ---------- TF STATIQUES ----------
-    tf_front = Node(
+        ld.add_action(Node(
+            package="laser_filters",
+            executable="scan_to_scan_filter_chain",
+            parameters=[
+                PathJoinSubstitution([
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_front.yaml",
+                ])],
+            remappings=[
+                ('scan', '/scan_front'),
+                ('scan_filtered', '/scan_front_filtered')
+            ],
+        ))
+
+
+    # ---------- Rear Lidar ----------
+    if os.path.exists("/dev/ttyUSB1"):
+        ld.add_action(Node(
+            package='rplidar_ros',
+            executable='rplidar_node',
+            name='rplidar_rear',
+            parameters=[{
+                'channel_type': 'serial',
+                'serial_port': '/dev/ttyUSB1',
+                'serial_baudrate': 256000,
+                'frame_id': 'laser_rear',
+                'inverted': False,
+                'angle_compensate': False,
+                'scan_mode': 'Sensitivity'
+            }],
+            remappings=[('scan', '/scan_rear')],
+            output='screen'
+        ))
+
+        ld.add_action(Node(
+            package="laser_filters",
+            executable="scan_to_scan_filter_chain",
+            parameters=[
+                PathJoinSubstitution([
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_rear.yaml",
+                ])],
+            remappings=[
+                ('scan', '/scan_rear'),
+                ('scan_filtered', '/scan_rear_filtered')
+            ],
+        ))
+
+    # ---------- Merging scans if at least one lidar is present ----------
+    if os.path.exists("/dev/ttyUSB0") or os.path.exists("/dev/ttyUSB1"):
+        ld.add_action(Node(
+            package='dual_laser_merger',
+            executable='dual_laser_merger_node',
+            name='dual_laser_merger',
+            output='screen',
+            parameters=[PathJoinSubstitution([
+                get_package_share_directory("robot_bringup"),
+                "params", "dual_laser_merger.yaml",
+            ])],
+            remappings=[
+                ('laser_1', '/scan_front_filtered'),
+                ('laser_2', '/scan_rear_filtered'),
+                ('merged', '/scan_merged')
+            ],
+        ))
+
+        
+    
+    # ---------- Static transforms ----------
+    ld.add_action(Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         arguments=['0.30', '0.20', '0.15', '0', '0', '0', 'base_link', 'laser_front']
-    )
+    ))
 
-    tf_rear = Node(
+    ld.add_action(Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         arguments=['-0.30', '-0.20', '0.15', '0', '0', '3.14159', 'base_link', 'laser_rear']
-    )
+    ))
 
-    # ---------- FUSION DES SCANS ----------
-    laser_merger = Node(
-        package='ira_laser_tools',
-        executable='laserscan_multi_merger',
-        name='laser_merger',
-        parameters=[{
-            'destination_frame': 'base_link',
-            'scan_destination_topic': 'scan_merged',
-            'cloud_destination_topic': 'cloud_merged',
-            'laserscan_topics': ['scan', 'scan_rear'],
-            'angle_min': -3.14,
-            'angle_max':  3.14,
-            'angle_increment': 0.0058,
-            'range_min': 0.15,
-            'range_max': 25.0
-        }],
-        output='screen'
-    )
 
     # ---------- SLAM TOOLBOX ----------
-    slam_toolbox = Node(
+    ld.add_action(Node(
         package='slam_toolbox',
         executable='sync_slam_toolbox_node',
         name='slam_toolbox',
@@ -97,14 +139,23 @@ def generate_launch_description():
             'minimum_travel_heading': 0.05
         }],
         output='screen'
-    )
+    ))
 
-    return LaunchDescription([
-        rplidar_front,
-        rplidar_rear,
-        tf_front,
-        tf_rear,
-        laser_merger,
-        slam_toolbox
-    ])
+
+    # ---------- RViz ----------
+    rviz_config_dir = os.path.join(
+            get_package_share_directory('rplidar_ros'),
+            'rviz',
+            'rplidar_ros.rviz')
+
+    ld.add_action(Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', rviz_config_dir],
+        output='screen'
+    ))
+
+
+    return ld
 
