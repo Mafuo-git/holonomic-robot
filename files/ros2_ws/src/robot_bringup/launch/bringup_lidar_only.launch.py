@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
@@ -32,7 +33,7 @@ def generate_launch_description():
 
         ))
 
-        ld.add_action(Node(
+        """ld.add_action(Node(
             package='laser_filters',
             executable='scan_to_scan_filter_chain',
             name='scan_filter_front',
@@ -40,10 +41,25 @@ def generate_launch_description():
                 ('scan', '/scan_front'),
                 ('scan_filtered', '/scan_front_filtered')
             ],
-            parameters=[{
-                            'lower_angle': -2.35619449,
-                            'upper_angle': 2.35619449
-                        }]      
+            parameters=[
+                os.path.join(
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_front.yaml",
+                )],
+        ))"""
+
+        ld.add_action(Node(
+            package="laser_filters",
+            executable="scan_to_scan_filter_chain",
+            parameters=[
+                PathJoinSubstitution([
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_front.yaml",
+                ])],
+            remappings=[
+                ('scan', '/scan_front'),
+                ('scan_filtered', '/scan_front_filtered')
+            ],
         ))
 
 
@@ -66,7 +82,7 @@ def generate_launch_description():
             output='screen'
         ))
 
-        ld.add_action(Node(
+        """ld.add_action(Node(
             package='laser_filters',
             executable='scan_to_scan_filter_chain',
             name='scan_filter_rear',
@@ -74,11 +90,26 @@ def generate_launch_description():
                 ('scan', '/scan_rear'),
                 ('scan_filtered', '/scan_rear_filtered')
             ],
-            parameters=[{
-                            'lower_angle': -2.35619449,
-                            'upper_angle': 2.35619449
-                        }]
-            ))
+            parameters=[
+                os.path.join(
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_rear.yaml",
+                )],
+        ))"""
+
+        ld.add_action(Node(
+            package="laser_filters",
+            executable="scan_to_scan_filter_chain",
+            parameters=[
+                PathJoinSubstitution([
+                    get_package_share_directory("robot_bringup"),
+                    "params", "scan_filter_rear.yaml",
+                ])],
+            remappings=[
+                ('scan', '/scan_rear'),
+                ('scan_filtered', '/scan_rear_filtered')
+            ],
+        ))
 
     ## Merging scans if both lidars are present
     if os.path.exists("/dev/ttyUSB0") and os.path.exists("/dev/ttyUSB1"):
