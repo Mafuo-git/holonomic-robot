@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch_ros.actions import ComposableNodeContainer
+from launch_ros.actions import ComposableNodeContainer, Node
 from launch_ros.descriptions import ComposableNode
 
 def generate_launch_description():
@@ -26,16 +26,27 @@ def generate_launch_description():
                     }],
                 ),
 
-                # # Phidget MotorControl 487736
-                # ComposableNode(
-                #     package='phidgets_motors',
-                #     plugin='phidgets::MotorsRosI',
-                #     name='phidgets_487736',
-                #     namespace='phidget_487736',
-                #     parameters=[{
-                #         'serial': 487736,
-                #     }],
-                # ),
+                # Phidget MotorControl 487736
+                ComposableNode(
+                    package='phidgets_motors',
+                    plugin='phidgets::MotorsRosI',
+                    name='phidgets_487736',
+                    namespace='phidget_487736',
+                    parameters=[{
+                        'serial': 487736,
+                    }],
+                ),
             ],
+        ),
+
+
+        # ===============================
+        # Listener low-level control
+        # ===============================
+        Node(
+            package='cpp_motors_control',
+            executable='listener',
+            name='listener',
+            output='screen',
         ),
     ])

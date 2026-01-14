@@ -19,7 +19,7 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_copyright_FOUND TRUE) 
   # the following line skips cpplint (only works in a git repo)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
@@ -27,15 +27,19 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-add_executable(talker src/publisher_cmdVel_teleop.cpp)
-ament_target_dependencies(talker rclcpp geometry_msgs)
+add_executable(keyboard_teleop src/publisher_cmdVel_teleop.cpp)
+ament_target_dependencies(keyboard_teleop rclcpp geometry_msgs)
 
 add_executable(listener src/subscriber_low_level_control.cpp)
 ament_target_dependencies(listener rclcpp geometry_msgs phidgets_drivers std_msgs)
 
+add_executable(node_red_teleop src/node_red_teleop.cpp)
+ament_target_dependencies(node_red_teleop rclcpp geometry_msgs std_msgs)
+
 install(TARGETS
-  talker
+  keyboard_teleop
   listener
+  node_red_teleop
   DESTINATION lib/${PROJECT_NAME})
 
 install(
