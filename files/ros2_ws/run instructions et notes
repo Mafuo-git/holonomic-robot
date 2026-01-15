@@ -3,7 +3,7 @@ nav2 : https://docs.nav2.org/tutorials/docs/navigation2_with_slam.html#
 
 
 
-# after manually installing packages, build the workspace:
+# after manually installing packages, build the workspace (will take some time since all dependencies will be installed):
 cd ~/holonomic-robot/files/ros2_ws/
 source opt/ros/jazzy/setup.bash
 rosdep install -i --from-path src --rosdistro jazzy -y
@@ -16,8 +16,8 @@ colcon build
 cd ~/holonomic-robot/files/ros2_ws/
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
-ros2 run [nom du package] [nom de la node]
-ros2 launch [nom du package] [nom du launch file].launch.py
+ros2 run <package_name> <executable_name>
+ros2 launch <package_name> <launch_file>.launch.py
 
 
 # examples for motor control package:
@@ -40,15 +40,17 @@ set -e
 source /opt/ros/jazzy/setup.bash
 source ~/holonomic-robot/files/ros2_ws/install/setup.bash
 
-# environnement ROS variables
+# environnement ROS variables (allows communication between nodes to send and receive messages from the raspberry and other devices)
 export ROS_DOMAIN_ID=0
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 
 # (optional) log
 echo "ROS2 démarré à $(date)" >> ~/ros2_startup.log
 
-# the launchfile
+# the launchfile (teleop with node red)
 exec ros2 launch cpp_motors_control teleop_node_red.launch.py
+# the launchfile (general)
+exec ros2 launch <package_name> <launch_file>.launch.py
 ```
 
 chmod +x ~/start_ros2_teleop.sh
