@@ -9,7 +9,7 @@ dual_laser_merger:
     target_frame: base_link
 
     # Publication
-    merged_topic: /scan_merged
+    merged_topic: /scan
 
     # Angles finaux du scan fusionné
     angle_min: -3.14159
@@ -22,7 +22,7 @@ dual_laser_merger:
     range_min: 0.15
     range_max: 25.0
 
-    # Timeout TF
+    # Timeout TFbase_link
     tf_timeout: 0.1
 
     # Comportement

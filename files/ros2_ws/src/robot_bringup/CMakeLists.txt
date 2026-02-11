@@ -28,7 +28,7 @@ if(BUILD_TESTING)
 endif()
 
 install(
-  DIRECTORY launch params
+  DIRECTORY launch params URDF
   DESTINATION share/${PROJECT_NAME}
 )
 

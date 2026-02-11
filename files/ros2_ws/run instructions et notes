@@ -1,6 +1,19 @@
 #packages to install manually:
 nav2 : https://docs.nav2.org/tutorials/docs/navigation2_with_slam.html#
+micro_ros : https://github.com/micro-ROS/micro_ros_setup
 
+source /opt/ros/jazzy/setup.bash
+cd ~/holonomic-robot/files/ros2_ws/
+git clone -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup
+rosdep update && rosdep install --from-paths src --ignore-src -y
+colcon build
+source install/setup.bash
+
+# create the micro-ROS agent:
+ros2 run micro_ros_setup create_agent_ws.sh
+ros2 run micro_ros_setup build_agent.sh
+source install/local_setup.sh
+ros2 run micro_ros_agent micro_ros_agent [parameters]
 
 
 # after manually installing packages, build the workspace (will take some time since all dependencies will be installed):

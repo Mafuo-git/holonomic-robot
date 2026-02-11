@@ -48,7 +48,7 @@ def generate_launch_description():
                 ])],
             remappings=[
                 ('scan', '/scan_front'),
-                ('scan_filtered', '/scan_front_filtered')
+                ('scan_filtered', '/scan_front_filtered')   
             ],
         ))
 

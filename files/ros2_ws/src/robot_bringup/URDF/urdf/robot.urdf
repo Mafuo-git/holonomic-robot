@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="URDF_Robinson">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0091882 -0.00038393 -0.014459"
+        rpy="0 0 0" />
+      <mass
+        value="25" />
+      <inertia
+        ixx="0.048482"
+        ixy="7.7931E-07"
+        ixz="-3.1662E-06"
+        iyy="0.039882"
+        iyz="1.9981E-06"
+        izz="0.066488" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="Roue_ArG_Link">
+    <inertial>
+      <origin
+        xyz="-7.8621E-09 0.00014851 1.3166E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.236" />
+      <inertia
+        ixx="1.712E-05"
+        ixy="-1.1989E-12"
+        ixz="-3.4901E-13"
+        iyy="2.4417E-05"
+        iyz="1.0819E-12"
+        izz="1.7119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_ArG_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_ArG_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Roue_ArG_Joint"
+    type="revolute">
+    <origin
+      xyz="-0.14267 0.1615 0.23755"
+      rpy="1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="Roue_ArG_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="6.28"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Roue_AvG_Link">
+    <inertial>
+      <origin
+        xyz="-4.9744E-09 0.00014706 1.4603E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.236" />
+      <inertia
+        ixx="1.712E-05"
+        ixy="2.0272E-13"
+        ixz="-1.7155E-12"
+        iyy="2.4417E-05"
+        iyz="-2.0598E-12"
+        izz="1.7119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_AvG_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_AvG_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Roue_AvG_Joint"
+    type="revolute">
+    <origin
+      xyz="0.14267 0.1615 0.23755"
+      rpy="1.5708 0 2.6268" />
+    <parent
+      link="base_link" />
+    <child
+      link="Roue_AvG_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="6.28"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Roue_AvD_Link">
+    <inertial>
+      <origin
+        xyz="-1.8496E-09 0.00014851 1.2966E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.236" />
+      <inertia
+        ixx="1.712E-05"
+        ixy="-1.7156E-12"
+        ixz="2.4201E-13"
+        iyy="2.4417E-05"
+        iyz="-1.8534E-13"
+        izz="1.7119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_AvD_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_AvD_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Roue_AvD_Joint"
+    type="revolute">
+    <origin
+      xyz="0.14267 0.1615 -0.23755"
+      rpy="-1.5708 0 2.5629" />
+    <parent
+      link="base_link" />
+    <child
+      link="Roue_AvD_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="6.28"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="Roue_ArD_Link">
+    <inertial>
+      <origin
+        xyz="-6.0997E-09 0.00014706 1.405E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.236" />
+      <inertia
+        ixx="1.712E-05"
+        ixy="7.8344E-13"
+        ixz="1.5017E-12"
+        iyy="2.4417E-05"
+        iyz="-5.5569E-13"
+        izz="1.7119E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_ArD_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/Roue_ArD_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Roue_ArD_Joint"
+    type="revolute">
+    <origin
+      xyz="-0.14267 0.1615 -0.23755"
+      rpy="-1.5708 0 -0.06388" />
+    <parent
+      link="base_link" />
+    <child
+      link="Roue_ArD_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="0"
+      upper="6.28"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="LiDAR_AvG_Link">
+    <inertial>
+      <origin
+        xyz="-0.0071366 0.028564 0.076175"
+        rpy="0 0 0" />
+      <mass
+        value="0.19" />
+      <inertia
+        ixx="1.644E-05"
+        ixy="1.0866E-07"
+        ixz="-7.0409E-07"
+        iyy="2.939E-05"
+        iyz="-5.4212E-08"
+        izz="1.4426E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/LiDAR_AvG_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/LiDAR_AvG_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LiDAR_AvG_Joint"
+    type="fixed">
+    <origin
+      xyz="0.22846 -0.031786 0.14004"
+      rpy="0 -0.0069011 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="LiDAR_AvG_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="LiDAR_ArD_Link">
+    <inertial>
+      <origin
+        xyz="-0.0071366 0.028565 0.076175"
+        rpy="0 0 0" />
+      <mass
+        value="0.19" />
+      <inertia
+        ixx="1.644E-05"
+        ixy="1.0866E-07"
+        ixz="-7.0409E-07"
+        iyy="2.939E-05"
+        iyz="-5.4212E-08"
+        izz="1.4426E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/LiDAR_ArD_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/LiDAR_ArD_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LiDAR_ArD_Joint"
+    type="fixed">
+    <origin
+      xyz="-0.22828 -0.031786 -0.14006"
+      rpy="3.1416 0.0091971 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LiDAR_ArD_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="IMU_Link">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/IMU_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/IMU_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="IMU_Joint"
+    type="fixed">
+    <origin
+      xyz="-0.008 -0.0761 0.0052"
+      rpy="-1.5708 0 -3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="IMU_Link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
