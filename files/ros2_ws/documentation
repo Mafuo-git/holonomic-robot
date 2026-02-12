@@ -1,0 +1,57 @@
+
+####################
+List of the packages used :
+
+  #external hardware control
+  - phidgets_drivers
+  - rplidar_ros
+  - micro ros agent
+
+  #messages
+  - nav_msgs
+  - sensor_msgs
+  - geometry_msgs
+
+  #visualization
+  - rviz2
+
+  #navigation
+  - nav2
+
+  #mapping
+  - slam_toolbox
+  - laser_filters
+  - tf2_ros
+
+
+################
+Possible future additions :
+
+  # Not a priority but would improve the reliabalilty of the robot on unconnected environments.
+  Add a local network on the NUC to avoid being dependent of an external wifi network. 
+  This would allow the robot to be used in environments without wifi, 
+  and would also improve the reliability of the connection between the NUC and the remote control device (laptop, tablet, etc.). 
+  This would also allow  to set fixed IP addresses for the NUC and the remote control device,
+  which would simplify the connection process and allow a setup of the ESP32/NUC connection with wifi instead of relying on a USB connection.
+  
+  # Originally planned to be implemeneted, but it was not a priority and it was not implemented due to time and material constraints.
+  # Add a camera to the robot and use it for visual navigation and obstacle avoidance.
+  This would allow the robot to navigate in more complex environments and avoid obstacles that are not detected by the lidar. 
+  It would also allow the robot to perform tasks such as object recognition and manipulation, which would expand its capabilities and potential applications. 
+  This would require the addition of a camera sensor, as well as the development of software to process the camera data and integrate it with 
+  the existing navigation and control systems.
+
+  # Originally planned to be implemeneted, but it was not a priority and it was not implemented due to time constraints.
+  # Connect the Robot IHM to allow viewing the Rviz2 visualization and controlling the robot remotely.
+
+  # Originally planned to be implemeneted, but it was not a priority and it was not implemented due to time constraints.
+  # Use the laser capors on the sides of the robot to improve obstacle detection and navigation in narrow spaces.
+
+
+
+# known issues :
+  - The phidget drivers are too old compared to the recent ROS2 packages, 
+  and they are not fully compatible with the latest distributions 
+  (braking not supported) :
+  https://github.com/ros-drivers/phidgets_drivers/issues/164
+

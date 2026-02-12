@@ -93,14 +93,14 @@ private:
     {
         this->twist_.linear.x = 0.0;
         this->twist_.linear.y = 0.0;
-        this->twist_.angular.z = this->angular_speed_;
+        this->twist_.angular.z = -this->angular_speed_;
         if(verbose){RCLCPP_INFO(this->get_logger(), "Rotating left");}
     }
     else if (cmd == "RD")
     {
         this->twist_.linear.x = 0.0;
         this->twist_.linear.y = 0.0;
-        this->twist_.angular.z = -this->angular_speed_;
+        this->twist_.angular.z = this->angular_speed_;
         if(verbose){RCLCPP_INFO(this->get_logger(), "Rotating right");}
     }
     else if (cmd == "AR")

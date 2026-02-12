@@ -30,17 +30,17 @@
       Ly_ = this->declare_parameter("ly", 0.15);
 
       // publishers moteurs
-      motor_pub_[0] = this->create_publisher<std_msgs::msg::Float64>(
+      motor_pub_[2] = this->create_publisher<std_msgs::msg::Float64>(
     "/phidget_487541/set_motor_duty_cycle00", 10);
 
-  motor_pub_[1] = this->create_publisher<std_msgs::msg::Float64>(
+  motor_pub_[3] = this->create_publisher<std_msgs::msg::Float64>(
     "/phidget_487541/set_motor_duty_cycle01", 10);
 
-  motor_pub_[2] = this->create_publisher<std_msgs::msg::Float64>(
-    "/phidget_487736/set_motor_duty_cycle02", 10);
+  motor_pub_[0] = this->create_publisher<std_msgs::msg::Float64>(
+    "/phidget_487736/set_motor_duty_cycle00", 10);
 
-  motor_pub_[3] = this->create_publisher<std_msgs::msg::Float64>(
-    "/phidget_487736/set_motor_duty_cycle03", 10);
+  motor_pub_[1] = this->create_publisher<std_msgs::msg::Float64>(
+    "/phidget_487736/set_motor_duty_cycle01", 10);
 
       // subscriber cmd_vel
       subscription_ = this->create_subscription<geometry_msgs::msg::Twist>(
@@ -58,9 +58,9 @@
 
       const double k = (Lx_ + Ly_);
 
-      double w_fl = (1.0 / R_) * ( vx - vy - k * w );
+      double w_fl = -(1.0 / R_) * ( vx - vy - k * w );
       double w_fr = (1.0 / R_) * ( vx + vy + k * w );
-      double w_rl = (1.0 / R_) * ( vx + vy - k * w );
+      double w_rl = -(1.0 / R_) * ( vx + vy - k * w );
       double w_rr = (1.0 / R_) * ( vx - vy + k * w );
 
       publishMotor(0, w_fl);
