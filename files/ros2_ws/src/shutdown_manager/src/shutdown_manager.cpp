@@ -39,34 +39,16 @@
         }
     }
 
-    void publishMotor(int index, double velocity)
-    {
-      std_msgs::msg::Float64 msg;
-      double max_wheel_speed = 20.0; // rad/s correspondant à duty = 1.0
-
-      double duty = velocity / max_wheel_speed;
-
-      // saturation
-      if (duty > 1.0) duty = 1.0;
-      if (duty < -1.0) duty = -1.0;
-      msg.data = duty;
-
-      motor_pub_[index]->publish(msg);
-      RCLCPP_INFO(this->get_logger(), "Moving motor %d at %.2f", index, velocity);
-    }
-
+    
     // ROS
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_;
-    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr motor_pub_[4];
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr subscription_;
 
-    // paramètres robot
-    double R_, Lx_, Ly_;
   };
 
   int main(int argc, char * argv[])
   {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<CmdVelSubscriber>());
+    rclcpp::spin(std::make_shared<ShutdownNode>());
     rclcpp::shutdown();
     return 0;
   }
