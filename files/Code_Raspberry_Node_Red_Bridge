@@ -1,0 +1,77 @@
+# Import des modules nécessaires
+
+import rclpy  # Bibliothèque ROS 2 pour Python
+
+from rclpy.node import Node  # Classe de base pour créer un nœud ROS 2
+
+from std_msgs.msg import String  # Type de message standard ROS (String)
+
+from flask import Flask, request  # Flask pour créer un serveur web / API
+
+# Création de l'application Flask
+
+app = Flask(__name__)
+
+
+# Définition d'un nœud ROS 2 qui fera le pont avec Node-RED
+
+class BridgeNode(Node):
+
+
+    def __init__(self):
+
+
+# Initialisation du nœud avec le nom 'node_red_bridge'
+
+        super().__init__('node_red_bridge')
+
+# Création d'un éditeur (publisher) ROS 2 sur le topic '/cmd_from_nodered'
+# Les messages seront de type String et la file d'attente a une taille de 10
+        self.pub = self.create_publisher(String, '/cmd_from_nodered', 10)
+
+
+# Méthode pour publier un message sur le topic ROS
+def publish(self, data):
+    msg = String()  # Création d'un message String
+    msg.data = data  # Remplissage du message avec les données reçues
+    self.pub.publish(msg)  # Publication sur le topic
+
+
+# Variable globale pour stocker le nœud ROS
+
+node = None
+
+
+# Définition d'une route Flask pour recevoir les commandes depuis Node-RED
+
+@app.route('/cmd', methods=['POST'])
+def cmd():
+
+
+    data = request.json['data']  # Récupère la donnée envoyée en JSON via POST
+
+    node.publish(data)  # Publie la donnée sur le topic ROS
+
+    return "OK"  # Renvoie un simple message de confirmation
+
+
+# Fonction principale pour démarrer le serveur Flask et le nœud ROS
+
+def main():
+
+
+    global node
+
+    rclpy.init()  # Initialisation du client ROS 2
+
+    node = BridgeNode()  # Création d'une instance du nœud ROS
+
+    app.run(host='0.0.0.0', port=5000)  # Démarrage du serveur Flask accessible depuis l'extérieur
+
+    rclpy.spin(node)  # Boucle principale ROS pour garder le nœud actif
+
+# Si le script est exécuté directement
+
+if __name__ == '__main__':
+
+    main()
