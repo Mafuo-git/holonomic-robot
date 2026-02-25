@@ -1,0 +1,252 @@
+#include <Wire.h>
+#include "Adafruit_VL53L0X.h"
+#include <DHT.h>
+#include <math.h>
+
+// =====================================================
+// ------------------- ODOMETRIE -----------------------
+// =====================================================
+
+#define TICKS_PER_REV 384.0
+#define WHEEL_DIAMETER 0.096
+#define L 0.15
+#define W 0.15
+
+float wheelCircumference;
+
+volatile long countFL = 0, countFR = 0, countRL = 0, countRR = 0;
+long lastFL = 0, lastFR = 0, lastRL = 0, lastRR = 0;
+
+float x = 0, y = 0, theta = 0;
+
+// Pins encodeurs
+#define FL_A 34
+#define FL_B 35
+#define RL_A 32
+#define RL_B 33
+#define FR_A 25
+#define FR_B 26
+#define RR_A 27
+#define RR_B 14
+
+// Interruptions
+void IRAM_ATTR isrFL(){ if(digitalRead(FL_A)==digitalRead(FL_B)) countFL++; else countFL--; }
+void IRAM_ATTR isrRL(){ if(digitalRead(RL_A)==digitalRead(RL_B)) countRL++; else countRL--; }
+void IRAM_ATTR isrFR(){ if(digitalRead(FR_A)==digitalRead(FR_B)) countFR++; else countFR--; }
+void IRAM_ATTR isrRR(){ if(digitalRead(RR_A)==digitalRead(RR_B)) countRR++; else countRR--; }
+
+// =====================================================
+// ----------- MULTIPLEXEUR + VL53L0X ------------------
+// =====================================================
+
+#define TCAADDR 0x70
+int canaux[4] = {1, 6, 4, 2};
+String noms[4] = {"Arriere", "Avant", "Gauche", "Droite"};
+Adafruit_VL53L0X lox[4];
+
+// =====================================================
+// ------------------- DHT11 ---------------------------
+// =====================================================
+
+#define DHTPIN 17
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+// =====================================================
+// ------------------- BOUTON --------------------------
+// =====================================================
+
+const int BOUTON_PIN = 2;
+
+enum Mode { MODE_MANU, MODE_AUTO };
+Mode currentMode = MODE_MANU;
+
+int lastButtonState = HIGH;
+long lastDebounceTime = 0;
+long debounceDelay = 50;
+
+// =====================================================
+// ---------------- MULTIPLEXEUR -----------------------
+// =====================================================
+
+void tcaselect(uint8_t canal) {
+  if (canal > 7) return;
+  Wire.beginTransmission(TCAADDR);
+  Wire.write(1 << canal);
+  Wire.endTransmission();
+}
+
+// =====================================================
+// ------------------- SETUP ---------------------------
+// =====================================================
+
+void setup() {
+
+  Serial.begin(115200);
+  Wire.begin(21, 22);
+
+  wheelCircumference = PI * WHEEL_DIAMETER;
+
+  // Encodeurs
+  pinMode(FL_A, INPUT); pinMode(FL_B, INPUT);
+  pinMode(RL_A, INPUT); pinMode(RL_B, INPUT);
+  pinMode(FR_A, INPUT); pinMode(FR_B, INPUT);
+  pinMode(RR_A, INPUT); pinMode(RR_B, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(FL_A), isrFL, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RL_A), isrRL, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(FR_A), isrFR, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RR_A), isrRR, CHANGE);
+
+  // Bouton
+  pinMode(BOUTON_PIN, INPUT_PULLUP);
+
+  // DHT
+  dht.begin();
+
+  // VL53L0X
+  Serial.println("Initialisation VL53L0X...");
+  for (int i = 0; i < 4; i++) {
+    tcaselect(canaux[i]);
+    delay(10);
+    if (!lox[i].begin())
+      Serial.println("Erreur capteur !");
+  }
+
+  Serial.println("Systeme pret.");
+}
+
+// =====================================================
+// ------------------- LOOP ----------------------------
+// =====================================================
+
+unsigned long lastSensorRead = 0;
+
+void loop() {
+
+  gestionBouton();
+  updateOdometry();
+
+  // Lecture capteurs toutes les 2 secondes
+  if (millis() - lastSensorRead > 2000) {
+    lastSensorRead = millis();
+    executeModeTask(currentMode);
+  }
+}
+
+// =====================================================
+// ----------------- ODOMETRIE -------------------------
+// =====================================================
+
+void updateOdometry() {
+
+  long currentFL = countFL;
+  long currentFR = countFR;
+  long currentRL = countRL;
+  long currentRR = countRR;
+
+  long dFL = currentFL - lastFL;
+  long dFR = currentFR - lastFR;
+  long dRL = currentRL - lastRL;
+  long dRR = currentRR - lastRR;
+
+  lastFL = currentFL;
+  lastFR = currentFR;
+  lastRL = currentRL;
+  lastRR = currentRR;
+
+  float distFL = (dFL / TICKS_PER_REV) * wheelCircumference;
+  float distFR = (dFR / TICKS_PER_REV) * wheelCircumference;
+  float distRL = (dRL / TICKS_PER_REV) * wheelCircumference;
+  float distRR = (dRR / TICKS_PER_REV) * wheelCircumference;
+
+  float dx = (distFL + distFR + distRL + distRR) / 4.0;
+  float dy = (-distFL + distFR + distRL - distRR) / 4.0;
+  float dtheta = (-distFL + distFR - distRL + distRR) / (4.0 * (L + W));
+
+  float cosT = cos(theta);
+  float sinT = sin(theta);
+
+  x += dx * cosT - dy * sinT;
+  y += dx * sinT + dy * cosT;
+  theta += dtheta;
+}
+
+// =====================================================
+// ---------------- BOUTON -----------------------------
+// =====================================================
+
+void gestionBouton() {
+
+  int reading = digitalRead(BOUTON_PIN);
+
+  if (reading != lastButtonState)
+    lastDebounceTime = millis();
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading == HIGH && lastButtonState == LOW)
+      currentMode = (currentMode == MODE_MANU) ? MODE_AUTO : MODE_MANU;
+  }
+
+  lastButtonState = reading;
+}
+
+// =====================================================
+// ----------------- EXECUTION MODE --------------------
+// =====================================================
+
+void executeModeTask(Mode mode) {
+
+  Serial.println("\n===== ETAT ROBOT =====");
+
+  Serial.print("X: "); Serial.print(x, 2);
+  Serial.print("  Y: "); Serial.print(y, 2);
+  Serial.print("  Theta: "); Serial.println(theta, 2);
+
+  lireCapteurs();
+  lireDHT();
+}
+
+// =====================================================
+// ----------------- VL53L0X ---------------------------
+// =====================================================
+
+void lireCapteurs() {
+
+  VL53L0X_RangingMeasurementData_t measure;
+  Serial.println("---- Distances ----");
+
+  for (int i = 0; i < 4; i++) {
+
+    tcaselect(canaux[i]);
+    delay(5);
+
+    lox[i].rangingTest(&measure, false);
+
+    Serial.print(noms[i]);
+    Serial.print(" : ");
+
+    if (measure.RangeStatus != 4)
+      Serial.print(measure.RangeMilliMeter / 10.0);
+    else
+      Serial.print("Erreur");
+
+    Serial.println(" cm");
+  }
+}
+
+// =====================================================
+// ------------------- DHT -----------------------------
+// =====================================================
+
+void lireDHT() {
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if (!isnan(h) && !isnan(t)) {
+    Serial.print("Humidite: "); Serial.print(h);
+    Serial.print(" %  Temperature: "); Serial.print(t);
+    Serial.println(" C");
+  }
+}
