@@ -1,0 +1,60 @@
+import rclpy
+from rclpy.node
+
+import Node
+from std_msgs.msg
+
+import String
+from flask
+
+import Flask, request
+
+app = Flask(name)
+
+
+class BridgeNode(Node):
+
+
+    def init(self):
+
+
+        super().init('node_red_bridge')
+
+        self.pub = self.create_publisher(String, '/cmd_from_nodered', 10)
+
+
+def publish(self, data):
+    msg = String()
+    msg.data = data
+    self.pub.publish(msg)
+
+
+node = None
+
+
+@app.route('/cmd', methods=['POST'])
+def cmd():
+
+
+    data = request.json['data']
+
+    node.publish(data)
+
+    return "OK"
+
+
+def main():
+
+
+    global node
+    rclpy.init()
+
+    node = BridgeNode()
+
+    app.run(host='0.0.0.0', port=5000)
+
+    rclpy.spin(node)
+
+if __name__ == '__main__':
+
+    main()
