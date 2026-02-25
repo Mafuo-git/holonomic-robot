@@ -1,0 +1,27 @@
+[Unit]
+
+Description = ROS2
+Node - RED
+Bridge
+Publisher
+
+After = network.target
+
+[Service]
+
+Type = simple
+
+User = isen
+
+Environment = ROS_DOMAIN_ID = 0
+
+ExecStart = / bin / bash - c
+"source /opt/ros/jazzy/setup.bash && source /home/isen/ros2_ws/install/setup.bash && ros2 run node_red_bridge publisher"
+
+Restart = always
+
+RestartSec = 3
+
+[Install]
+
+WantedBy = multi - user.target 
