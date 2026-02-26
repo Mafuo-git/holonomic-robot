@@ -1,0 +1,31 @@
+# instructions to create an autorun for the teleop with node red:
+
+nano ~/start_ros2_teleop.sh
+
+# fill the file with the content of ./sample_files_NUC/start_ros2_teleop.sh, 
+# remember to replace the package and file names in the last line with the ones you want to launch, 
+# here the teleop with node red launch file is used as an example, 
+# but you can replace it with any launch file you want to run at startup, 
+# then save and exit (Ctrl + O, Enter, Ctrl + X), and make the script executable:
+
+chmod +x ~/start_ros2_teleop.sh
+
+
+nano /etc/systemd/system/ros2-teleop.service
+
+# Replace isen with the user name, for example 'pi' or 'isen' and 
+# replace the path to the script if you saved it in a different location, 
+# then save and exit (Ctrl + O, Enter, Ctrl + X):
+
+systemctl daemon-reexec
+systemctl enable ros2-teleop.service
+systemctl start ros2-teleop.service
+
+
+# useful commands to manage the service:
+systemctl status ros2-teleop.service  #(to verify that the service is running)
+journalctl -u ros2-teleop.service -f  #(to follow the service logs)
+systemctl restart ros2-teleop.service #(to restart the service)
+systemctl disable ros2-teleop.service #(to disable automatic startup at boot)
+systemctl stop ros2-teleop.service    #(to stop the service)
+sudo loginctl enable-linger YOUR_USER #(to allow the user service to start at boot even if the user is not logged in)
