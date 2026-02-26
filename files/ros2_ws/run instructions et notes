@@ -1,4 +1,4 @@
-#packages to install manually:
+#packages to install manually (not required to use the teleop with node red):
 nav2 : https://docs.nav2.org/tutorials/docs/navigation2_with_slam.html#
 micro_ros : https://github.com/micro-ROS/micro_ros_setup
 
@@ -9,7 +9,7 @@ rosdep update && rosdep install --from-paths src --ignore-src -y
 colcon build
 source install/setup.bash
 
-# create the micro-ROS agent:
+# create the micro-ROS agent (not required for now since the ESP32 will not be used, but useful for future development):
 ros2 run micro_ros_setup create_agent_ws.sh
 ros2 run micro_ros_setup build_agent.sh
 source install/local_setup.sh
@@ -42,64 +42,33 @@ ros2 launch cpp_motors_control teleop_node_red.launch.py ==> lance le controle d
 # instructions to create an autorun for the teleop with node red:
 
 nano ~/start_ros2_teleop.sh
-==>
-```
-#!/bin/bash
 
-# Sécurité
-set -e
-
-# load the ROS 2 environment
-source /opt/ros/jazzy/setup.bash
-source ~/holonomic-robot/files/ros2_ws/install/setup.bash
-
-# environnement ROS variables (allows communication between nodes to send and receive messages from the raspberry and other devices)
-export ROS_DOMAIN_ID=0
-export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-
-# (optional) log
-echo "ROS2 démarré à $(date)" >> ~/ros2_startup.log
-
-# the launchfile (teleop with node red)
-exec ros2 launch cpp_motors_control teleop_node_red.launch.py
-# the launchfile (general)
-exec ros2 launch <package_name> <launch_file>.launch.py
-```
+# fill the file with the content of /sample_files_NUC/start_ros2_teleop.sh, 
+# remember to replace the package and file names in the last line with the ones you want to launch, 
+# here the teleop with node red launch file is used as an example, 
+# but you can replace it with any launch file you want to run at startup, 
+# then save and exit (Ctrl + O, Enter, Ctrl + X), and make the script executable:
 
 chmod +x ~/start_ros2_teleop.sh
 
 
-mkdir -p ~/.config/systemd/user
-nano ~/.config/systemd/user/ros2-teleop.service
+nano /etc/systemd/system/ros2-teleop.service
 
-# /!\ Replace YOUR_USER with the user name, for example 'pi' or 'isen'
+# /!\ Replace isen with the user name, for example 'pi' or 'isen' and 
+# replace the path to the script if you saved it in a different location, 
+# then save and exit (Ctrl + O, Enter, Ctrl + X):
 
-```
-[Unit]
-Description=ROS2 Teleop Launch (Jazzy)
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/home/YOUR_USER/start_ros2_teleop.sh 
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=default.target
-```
-
-systemctl --user daemon-reexec
-systemctl --user enable ros2-teleop.service
-systemctl --user start ros2-teleop.service
+systemctl daemon-reexec
+systemctl enable ros2-teleop.service
+systemctl start ros2-teleop.service
 
 
 # useful commands to manage the service:
-systemctl --user status ros2-teleop.service  #(to verify that the service is running)
-journalctl --user -u ros2-teleop.service -f  #(to follow the service logs)
-systemctl --user restart ros2-teleop.service #(to restart the service)
-systemctl --user disable ros2-teleop.service #(to disable automatic startup at boot)
-systemctl --user stop ros2-teleop.service    #(to stop the service)
+systemctl status ros2-teleop.service  #(to verify that the service is running)
+journalctl -u ros2-teleop.service -f  #(to follow the service logs)
+systemctl restart ros2-teleop.service #(to restart the service)
+systemctl disable ros2-teleop.service #(to disable automatic startup at boot)
+systemctl stop ros2-teleop.service    #(to stop the service)
 sudo loginctl enable-linger TON_USER         #(to allow the user service to start at boot even if the user is not logged in)
 
 
